@@ -15,6 +15,7 @@ export class User {
     @Prop({
         required : true,
         unique : true,
+        // index : true  // Check here it could be swapped as an index in place of id
     })
     email : string
 

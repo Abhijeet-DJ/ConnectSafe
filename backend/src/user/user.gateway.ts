@@ -1,7 +1,7 @@
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { Controller, Get, Param, Post ,Body } from '@nestjs/common';
+import { Controller, Get, Param, Post ,Body, Patch, Delete } from '@nestjs/common';
 
 @Controller('/v1')
 export class UserGateway {
@@ -18,17 +18,25 @@ export class UserGateway {
   }
 
   @Get('/:id')
-  findOne(@Param() id: number) {
-    return this.userService.findOne(id);
+  findOne(@Param('id') id: string) {
+    try {
+      return this.userService.findOne(id);
+    } catch (error) {
+      const errObj = {
+        probableConflict : "Id is not good or Uuser type not satisfied",
+        error : { ...error }
+      }
+      return errObj
+    }
   }
 
-
-  update(@Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(updateUserDto.id, updateUserDto);
+  @Patch()
+  update(@Body() updateUserDto: UpdateUserDto ) {
+    return this.userService.update(updateUserDto);
   }
 
-
-  remove(@Param() id: number) {
+  @Delete('/:id')
+  remove(@Param('id') id: string) {
     return this.userService.remove(id);
   }
 }

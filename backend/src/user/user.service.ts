@@ -1,9 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './schema/user.schema';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
+
+class UUser {
+  readonly _id : mongoose.Schema.Types.ObjectId;
+  readonly email : string;
+  readonly profileImg : string;
+  readonly fullName : string;
+}
 
 @Injectable()
 export class UserService {
@@ -18,19 +25,36 @@ export class UserService {
   }
 
   async findAll() : Promise<UserDocument[]> {
-    const allUsers : UserDocument[] = await this.userModel.find().lean().exec()
+    const allUsers : UserDocument[] = await this.userModel.find().select("-pass").lean().exec()
     return allUsers;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: string) : Promise<UUser | any> {
+    const user : UUser | any =  await this.userModel.findById(id).select("-pass").lean().exec() as UUser | any
+    return user;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(updateUserDto: UpdateUserDto) {
+    const updateFieldName = updateUserDto.fieldName;
+    const updateValue = updateUserDto.value
+    const reqUser = await this.userModel.findByIdAndUpdate(updateUserDto._id,{
+      [updateFieldName] : updateValue
+    },{
+      upsert : true,
+      runValidators : true,
+      returnDocument : 'after',
+    }).select('-pass -email').exec();
+    return reqUser;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: string) : Promise<UserDocument | null > {
+    try {
+      const deletedUser = await this.userModel.findByIdAndDelete(id).exec();
+      return deletedUser
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      
+      throw new InternalServerErrorException('Delete operation failed');
+    }
   }
 }
