@@ -1,9 +1,11 @@
-import { HttpException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './schema/user.schema';
 import mongoose, { Model } from 'mongoose';
+import { LoginUserDto } from './dto/login-user.dto';
+import { HashService } from 'src/common/hash.service';
 
 class UUser {
   readonly _id : mongoose.Schema.Types.ObjectId;
@@ -16,12 +18,32 @@ class UUser {
 export class UserService {
   constructor(
     @InjectModel(User.name)
-    private readonly userModel : Model<UserDocument>
+    private readonly userModel : Model<UserDocument>,
+    private readonly hashService : HashService,
   ){}
 
   async create(createUserDto: CreateUserDto) : Promise<UserDocument> {
+    if (await this.userModel.findOne({ email : createUserDto.email }).lean().exec()) {
+      throw new BadRequestException({ message : 'User already exists!' })
+    }
+
+    createUserDto.pass = await this.hashService.hashPass(createUserDto.pass)
     const newUser = new this.userModel(createUserDto)
     return await newUser.save();
+  }
+
+  async login(loginUserDto : LoginUserDto) : Promise<UserDocument>{
+    const { email , pass } = loginUserDto
+
+    const user = await this.userModel.findOne({ email : email }).exec()
+    if (user) {
+      if (await this.hashService.comparePass(pass,user.pass)) {
+        const { pass , ...result } = user.toObject()
+        return result as UserDocument 
+      }
+    }
+
+    throw new BadRequestException({ message : "No user forund check your creds!" })
   }
 
   async findAll() : Promise<UserDocument[]> {
