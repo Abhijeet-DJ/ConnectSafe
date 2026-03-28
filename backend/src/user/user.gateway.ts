@@ -1,23 +1,43 @@
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { Controller, Get, Param, Post ,Body, Patch, Delete } from '@nestjs/common';
+import { Controller, Get, Param, Post, Body, Patch, Delete, Res, UseGuards, Req } from '@nestjs/common';
 import { LoginUserDto } from './dto/login-user.dto';
+import { AuthGuard } from 'src/common/guards/auth.guard';
+import type { Response  } from 'express';
 
-@Controller('/v1')
+@Controller('/v1/auth/')
 export class UserGateway {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @Post('/signup')
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
 
-  @Post('/signin')
-  getUser(@Body() loginUserDto : LoginUserDto) {
-    return this.userService.login(loginUserDto);
+  @Post('/login')
+  async login(
+    @Body() loginUserDto: LoginUserDto,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    const { user, token } = await this.userService.login(loginUserDto);
+
+    res.cookie('token', token, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: false,
+    });
+
+    return { user };
   }
 
+  @UseGuards(AuthGuard)
+  @Get('/check')
+  checkAuth(@Req() req) {
+    return req.user;
+  }
+
+  @UseGuards(AuthGuard)
   @Get('')
   findAll() {
     return this.userService.findAll();
@@ -25,24 +45,30 @@ export class UserGateway {
 
   @Get('/:id')
   findOne(@Param('id') id: string) {
-    try {
-      return this.userService.findOne(id);
-    } catch (error) {
-      const errObj = {
-        probableConflict : "Id is not good or Uuser type not satisfied",
-        error : { ...error }
-      }
-      return errObj
-    }
+    return this.userService.findOne(id);
   }
 
+  @UseGuards(AuthGuard)
   @Patch()
-  update(@Body() updateUserDto: UpdateUserDto ) {
+  update(@Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(updateUserDto);
   }
 
+  @UseGuards(AuthGuard)
   @Delete('/:id')
   remove(@Param('id') id: string) {
     return this.userService.remove(id);
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('/logout')
+  logout(@Res({ passthrough: true }) res: Response) {
+    res.clearCookie('token', {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: false, // true in prod
+    });
+
+    return { message: 'Logged out successfully' };
   }
 }

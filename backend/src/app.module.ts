@@ -5,6 +5,7 @@ import { UserModule } from './user/user.module';
 import { MongooseModule } from '@nestjs/mongoose'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { HashModule } from './common/hash.module';
+import { MessagesModule } from './messages/messages.module';
 
 @Module({
   imports: [UserModule,
@@ -18,7 +19,8 @@ import { HashModule } from './common/hash.module';
         uri : config.get<string>('MONGO_URI'),
       })
     }),
-    HashModule
+    HashModule,
+    MessagesModule
   ],
   controllers: [AppController],
   providers: [AppService],
