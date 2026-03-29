@@ -24,7 +24,7 @@ export class Message {
     @Prop({
         required : true,
     })
-    content : string
+    text : string
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message)

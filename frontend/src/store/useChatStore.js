@@ -14,8 +14,7 @@ export const useChatStore = create((set, get) => ({
         set({ isUsersLoading: true });
         try {
             const res = await axiosInstance.get("/messages/users");
-
-            set({ users: res.data.users });
+            set({ users: res.data });
 
         } catch (error) {
             toast.error(error.response.data.message);
@@ -29,7 +28,9 @@ export const useChatStore = create((set, get) => ({
         set({ isMessagesLoading: true });
         try {
             const res = await axiosInstance.get(`/messages/${userId}`);
-            set({ messages: res.data.messages })
+            console.log("messages :",res);
+            
+            set({ messages: res.data })
 
         } catch (error) {
             toast.error(error.response.data.message);
@@ -47,7 +48,7 @@ export const useChatStore = create((set, get) => ({
             const res = await axiosInstance.post(`/messages/send/${selectedUser._id}`, messageData);
             console.log("From sendMessage function :",res.data.message);
             
-            set({ messages: [...messages, res.data.message] })
+            set({ messages: [...messages, res.data] })
         } catch (error) {
             toast.error(error.response.data.message);
         }

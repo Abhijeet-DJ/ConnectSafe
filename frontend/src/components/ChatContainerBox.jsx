@@ -11,7 +11,7 @@ function ChatContainerBox() {
   const { authUser } = useAuthStore()
   const messageEndRef = useRef(null)
 
-  console.log("selectedUser :",selectedUser ,"\n","messages sender Id  :",messages.senderId , "\n messages :",messages,"\n Auth user id :",authUser._id);
+  // console.log("selectedUser :",selectedUser ,"\n","messages sender Id  :",messages.senderId , "\n messages :",messages,"\n Auth user id :",authUser._id);
   
 
   useEffect(() => {

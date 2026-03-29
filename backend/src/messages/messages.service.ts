@@ -1,37 +1,39 @@
 import { Injectable } from '@nestjs/common';
-import { CreateMessageDto } from './dto/create-message.dto';
-import { UpdateMessageDto } from './dto/update-message.dto';
-import { Message, MessageDocument } from './schema/message.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 @Injectable()
 export class MessagesService {
   constructor(
-    @InjectModel(Message.name)
-    private readonly messageModel : Model<MessageDocument>
-  ){}
+    @InjectModel('Message') private messageModel: Model<any>,
+    @InjectModel('User') private userModel: Model<any>,
+  ) { }
 
-  async create(createMessageDto: CreateMessageDto) : Promise<string> {
+  async getUsersForSidebar(userId: string) {
+    return this.userModel.find({ _id: { $ne: userId } }).select('-pass');
+  }
+
+  async getMessages(currUserId: string, userToChatId: string) {
+    const myMessages = await this.messageModel.find({
+      $or: [
+        { senderId: currUserId, recieverId: userToChatId },
+        { senderId: userToChatId, recieverId: currUserId },
+      ],
+    }).exec();
+
+    console.log(myMessages);
     
-    const newMessage : MessageDocument = new this.messageModel(createMessageDto)
+    return myMessages
+  }
+
+  async sendMessage(data: {
+    senderId: string;
+    recieverId: string;
+    text: string;
+    image?: string;
+  }) {
+    const newMessage = new this.messageModel(data);
     await newMessage.save()
-    return `Message sent : ${newMessage}`;
-  }
-
-  findAll() {
-    return `This action returns all messages`;
-  }
-
-  findOne(id: string) {
-    return `This action returns a #${id} message`;
-  }
-
-  update(id: string, updateMessageDto: UpdateMessageDto) {
-    return `This action updates a #${id} message`;
-  }
-
-  remove(id: string) {
-    return `This action removes a #${id} message`;
+    return newMessage;
   }
 }

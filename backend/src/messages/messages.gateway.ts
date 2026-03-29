@@ -1,39 +1,42 @@
-import { WebSocketGateway, SubscribeMessage, MessageBody } from '@nestjs/websockets';
-import { MessagesService } from './messages.service';
-import { CreateMessageDto } from './dto/create-message.dto';
-import { UpdateMessageDto } from './dto/update-message.dto';
+import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 
 @WebSocketGateway({
-  cors : {
-    origin : '*',
-  },
-  namespace : 'v1/chat',
+  namespace: '/chat',
+  cors: true,
 })
 export class MessagesGateway {
-  constructor(private readonly messagesService: MessagesService) {}
+  @WebSocketServer()
+  server: any;
 
-  @SubscribeMessage('createMessage')
-  create(@MessageBody() createMessageDto: CreateMessageDto) {
-    return this.messagesService.create(createMessageDto);
+  private onlineUsers = new Map<string, string>();
+
+  handleConnection(client: any) {
+    const user = client.handshake.auth.user;
+
+    if (!user?._id) return;
+
+    client.user = user;
+
+    this.onlineUsers.set(user._id, client.id);
   }
 
-  @SubscribeMessage('findAllMessages')
-  findAll() {
-    return this.messagesService.findAll();
+  handleDisconnect(client: any) {
+    const userId = client.user?._id;
+
+    if (userId) {
+      this.onlineUsers.delete(userId);
+    }
   }
 
-  @SubscribeMessage('findOneMessage')
-  findOne(@MessageBody() id: string) {
-    return this.messagesService.findOne(id);
+  getReceiverSocketId(userId: string) {
+    return this.onlineUsers.get(userId);
   }
 
-  @SubscribeMessage('updateMessage')
-  update(@MessageBody() updateMessageDto: UpdateMessageDto) {
-    return this.messagesService.update(updateMessageDto.id, updateMessageDto);
-  }
+  emitToUser(userId: string, event: string, data: any) {
+    const socketId = this.getReceiverSocketId(userId);
 
-  @SubscribeMessage('removeMessage')
-  remove(@MessageBody() id: string) {
-    return this.messagesService.remove(id);
+    if (socketId) {
+      this.server.to(socketId).emit(event, data);
+    }
   }
 }

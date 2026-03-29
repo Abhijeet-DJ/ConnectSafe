@@ -1,4 +1,3 @@
-// common/guards/auth.guard.ts
 import {
   CanActivate,
   ExecutionContext,
@@ -20,7 +19,6 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('No token found');
     }
 
-    // 🔥 USE AuthService HERE
     const user = await this.authService.validateToken(token);
 
     req.user = user;

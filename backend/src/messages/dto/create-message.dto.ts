@@ -4,8 +4,8 @@ export class CreateMessageDto {
     @IsString()
     content : string
 
-    @IsUrl()
-    mulMedUri : string
+    // @IsUrl()
+    // mulMedUri : string
 
     @IsMongoId()
     sender : string
