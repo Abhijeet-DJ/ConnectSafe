@@ -21,7 +21,7 @@ export class MessagesService {
       ],
     }).exec();
 
-    console.log(myMessages);
+    // console.log(myMessages);
     
     return myMessages
   }

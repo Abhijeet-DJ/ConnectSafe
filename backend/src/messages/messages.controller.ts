@@ -18,7 +18,7 @@ export class MessagesController {
     @Req() req,
   ) {
     const message = await this.messagesService.sendMessage({
-      senderId: req.user.id, // ✅ FIXED
+      senderId: req.user.id, 
       recieverId: receiverId,
       text: body.text,
       image: body.image,
@@ -31,7 +31,7 @@ export class MessagesController {
 
   @Get('users')
   async getUsersExceptMe(@Req() req) {
-    const currUserId = req.user?.id; // ✅ FIXED
+    const currUserId = req.user?.id; 
 
     if (!currUserId) {
       return 'Provide a valid Id';
@@ -43,9 +43,9 @@ export class MessagesController {
   @Get('/:id')
   async getMessages(@Param('id') userToChatId: string, @Req() req) {
     try {
-      const currUserId = req.user?.id; // ✅ FIXED
+      const currUserId = req.user?.id; 
 
-      console.log("From messages/:id :", userToChatId, currUserId);
+      // console.log("From messages/:id :", userToChatId, currUserId);
 
       return this.messagesService.getMessages(currUserId, userToChatId);
     } catch (error) {

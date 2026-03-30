@@ -101,17 +101,21 @@ export const useAuthStore = create((set , get )=>({
 
         const socket = io(BASE_URL,{
             query : {
-                userId : authUser._id,
+                userId : authUser.id,
             }
         })
         socket.connect();
+
+        console.log(socket);
+        
+        // socket.on
 
         socket.on("getOnlineUsers", (userIds) => {
             set({ onlineUsers : userIds })
         })
 
         set({ socket : socket });
-        console.log("User",get().socket?.connected );
+        console.log("User socket :",get().socket?.connected);
         
     },
 

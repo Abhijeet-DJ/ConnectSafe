@@ -64,6 +64,7 @@ export const useChatStore = create((set, get) => ({
             set({
                 messages: [...get().messages, newMessage]
             })
+            console.log("recived a message : ", newMessage)
         })
     },
     notListenToMessages : () => {

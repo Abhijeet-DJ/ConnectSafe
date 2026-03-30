@@ -1,7 +1,7 @@
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 
 @WebSocketGateway({
-  namespace: '/chat',
+  namespace: '/v1',
   cors: true,
 })
 export class MessagesGateway {
@@ -11,15 +11,14 @@ export class MessagesGateway {
   private onlineUsers = new Map<string, string>();
 
   handleConnection(client: any) {
-    const user = client.handshake.auth.user;
+    const userId = client.handshake.query.userId;
 
-    if (!user?._id) return;
+    if (!userId) return;
 
-    client.user = user;
+    client.user = { _id: userId };
 
-    this.onlineUsers.set(user._id, client.id);
+    this.onlineUsers.set(userId, client.id);
   }
-
   handleDisconnect(client: any) {
     const userId = client.user?._id;
 
@@ -34,6 +33,8 @@ export class MessagesGateway {
 
   emitToUser(userId: string, event: string, data: any) {
     const socketId = this.getReceiverSocketId(userId);
+
+    console.log("Reachable point...!",userId)
 
     if (socketId) {
       this.server.to(socketId).emit(event, data);
