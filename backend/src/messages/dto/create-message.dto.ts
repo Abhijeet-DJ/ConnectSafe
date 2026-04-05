@@ -11,5 +11,5 @@ export class CreateMessageDto {
     sender : string
 
     @IsMongoId()
-    reciever : string
+    receiver : string
 }

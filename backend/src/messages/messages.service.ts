@@ -16,8 +16,8 @@ export class MessagesService {
   async getMessages(currUserId: string, userToChatId: string) {
     const myMessages = await this.messageModel.find({
       $or: [
-        { senderId: currUserId, recieverId: userToChatId },
-        { senderId: userToChatId, recieverId: currUserId },
+        { senderId: currUserId, receiverId: userToChatId },
+        { senderId: userToChatId, receiverId: currUserId },
       ],
     }).exec();
 
@@ -28,7 +28,7 @@ export class MessagesService {
 
   async sendMessage(data: {
     senderId: string;
-    recieverId: string;
+    receiverId: string;
     text: string;
     image?: string;
   }) {

@@ -9,29 +9,25 @@ export class MessagesController {
   constructor(
     private messagesService: MessagesService,
     private messagesGateway: MessagesGateway,
-  ) {}
+  ) { }
 
   @Post('send/:id')
-  async sendMessage(
-    @Param('id') receiverId: string,
-    @Body() body,
-    @Req() req,
-  ) {
+  async sendMessage(@Param('id') receiverId: string, @Body() body, @Req() req) {
     const message = await this.messagesService.sendMessage({
-      senderId: req.user.id, 
-      recieverId: receiverId,
+      senderId: req.user.id,
+      receiverId: receiverId,
       text: body.text,
       image: body.image,
     });
 
     this.messagesGateway.emitToUser(receiverId, 'newMessage', message);
 
-    return { message };
+    return message;
   }
 
   @Get('users')
   async getUsersExceptMe(@Req() req) {
-    const currUserId = req.user?.id; 
+    const currUserId = req.user?.id;
 
     if (!currUserId) {
       return 'Provide a valid Id';
@@ -43,7 +39,7 @@ export class MessagesController {
   @Get('/:id')
   async getMessages(@Param('id') userToChatId: string, @Req() req) {
     try {
-      const currUserId = req.user?.id; 
+      const currUserId = req.user?.id;
 
       // console.log("From messages/:id :", userToChatId, currUserId);
 

@@ -19,7 +19,7 @@ export class Message {
         required : true,
         ref : 'User'
     })
-    recieverId : string
+    receiverId : string
 
     @Prop({
         required : true,

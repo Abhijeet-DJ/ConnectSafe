@@ -18,7 +18,9 @@ export class MessagesGateway {
     client.user = { _id: userId };
 
     this.onlineUsers.set(userId, client.id);
+     this.broadcastOnlineUsers();
   }
+
   handleDisconnect(client: any) {
     const userId = client.user?._id;
 
@@ -34,10 +36,16 @@ export class MessagesGateway {
   emitToUser(userId: string, event: string, data: any) {
     const socketId = this.getReceiverSocketId(userId);
 
-    console.log("Reachable point...!",userId)
-
     if (socketId) {
       this.server.to(socketId).emit(event, data);
     }
+  }
+
+  private broadcastOnlineUsers() {
+    // Converting Map keys to an array of userIds
+    const onlineUserIds = Array.from(this.onlineUsers.keys());
+    
+    // Emit to everyone in the '/v1' namespace
+    this.server.emit('getOnlineUsers', onlineUserIds);
   }
 }
