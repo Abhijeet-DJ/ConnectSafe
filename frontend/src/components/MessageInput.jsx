@@ -33,6 +33,11 @@ const MessageInput = () => {
     if (!text.trim() && !imagePreview) return;
 
     try {
+      console.log("Message Input same as messagesInput component :",{
+        text: text.trim(),
+        image: imagePreview,
+      });
+      
       await sendMessage({
         text: text.trim(),
         image: imagePreview,
